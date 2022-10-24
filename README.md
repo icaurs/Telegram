@@ -37,3 +37,7 @@ You will require Android Studio 3.4, Android NDK rev. 20 and Android SDK 8.1
 ### Localization
 
 We moved all translations to https://translations.telegram.org/en/android/. Please use it.
+
+证书指纹:
+SHA1: D1:4D:37:3D:82:8B:17:EC:4E:C9:A9:BA:73:83:A5:6F:EC:E0:54:FE
+SHA256: 85:9B:67:CC:9F:37:4F:57:2C:79:4E:AB:44:CD:B1:30:85:07:F9:D7:9D:8F:3B:B0:2E:09:6A:22:1B:1F:09:9C
