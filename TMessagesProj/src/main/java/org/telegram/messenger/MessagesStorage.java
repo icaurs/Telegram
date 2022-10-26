@@ -84,6 +84,7 @@ public class MessagesStorage extends BaseController {
 
     private static volatile MessagesStorage[] Instance = new MessagesStorage[UserConfig.MAX_ACCOUNT_COUNT];
     private static final Object[] lockObjects = new Object[UserConfig.MAX_ACCOUNT_COUNT];
+
     static {
         for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
             lockObjects[i] = new Object();
@@ -6122,7 +6123,7 @@ public class MessagesStorage extends BaseController {
             } catch (Exception e) {
                 FileLog.e(e);
             } finally {
-                if (state !=  null) {
+                if (state != null) {
                     state.dispose();
                 }
             }
@@ -9946,6 +9947,7 @@ public class MessagesStorage extends BaseController {
 
                 for (int a = 0; a < messages.size(); a++) {
                     TLRPC.Message message = messages.get(a);
+                    FileLog.d("update messageRead====" + message.message);
                     if (message instanceof TLRPC.TL_messageEmpty) {
                         continue;
                     }
@@ -10044,7 +10046,7 @@ public class MessagesStorage extends BaseController {
 
                 for (int a = 0; a < messages.size(); a++) {
                     TLRPC.Message message = messages.get(a);
-
+                    FileLog.d("update messageRead====" + message.message);
                     int messageId = message.id;
                     MessageObject.getDialogId(message);
                     if (message.mentioned && message.media_unread) {
