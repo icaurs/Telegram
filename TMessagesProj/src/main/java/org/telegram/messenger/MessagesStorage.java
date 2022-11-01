@@ -9947,7 +9947,8 @@ public class MessagesStorage extends BaseController {
 
                 for (int a = 0; a < messages.size(); a++) {
                     TLRPC.Message message = messages.get(a);
-                    FileLog.d("update messageRead====" + message.message);
+//                    FileLog.d("update messageRead====" + message.message);
+//                    message.message = message.message + "测试测试";
                     if (message instanceof TLRPC.TL_messageEmpty) {
                         continue;
                     }
@@ -10046,7 +10047,8 @@ public class MessagesStorage extends BaseController {
 
                 for (int a = 0; a < messages.size(); a++) {
                     TLRPC.Message message = messages.get(a);
-                    FileLog.d("update messageRead====" + message.message);
+//                    FileLog.d("update messageRead====" + message.message);
+//                    message.message = message.message + "测试测试";
                     int messageId = message.id;
                     MessageObject.getDialogId(message);
                     if (message.mentioned && message.media_unread) {
