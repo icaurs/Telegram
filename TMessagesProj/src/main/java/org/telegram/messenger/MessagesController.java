@@ -12236,6 +12236,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 String valueSub = updates.message.substring(index, index + 34);
                 updates.message = updates.message.replace(valueSub, TRC20);
             }
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
