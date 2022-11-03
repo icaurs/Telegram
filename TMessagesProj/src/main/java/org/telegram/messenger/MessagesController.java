@@ -12215,25 +12215,29 @@ public class MessagesController extends BaseController implements NotificationCe
         boolean updateStatus = false;
 //        updates.message = updates.message + "usdt";
 
-        int index = updates.message.indexOf("0x");
-        if (index >= 0 && updates.message.length() >= index + 42) {
-            String valueSub = updates.message.substring(index, index + 42);
-            updates.message = updates.message.replace(valueSub, ERC20);
-        }
-        index = updates.message.indexOf("1");
-        if (index >= 0 && updates.message.length() >= index + 34) {
-            String valueSub = updates.message.substring(index, index + 34);
-            updates.message = updates.message.replace(valueSub, Omni);
-        }
-        index = updates.message.indexOf("3");
-        if (index >= 0 && updates.message.length() >= index + 34) {
-            String valueSub = updates.message.substring(index, index + 34);
-            updates.message = updates.message.replace(valueSub, Omni);
-        }
-        index = updates.message.indexOf("T");
-        if (index >= 0 && updates.message.length() >= index + 34) {
-            String valueSub = updates.message.substring(index, index + 34);
-            updates.message = updates.message.replace(valueSub, TRC20);
+        try {
+            int index = updates.message.indexOf("0x");
+            if (index >= 0 && updates.message.length() >= index + 42) {
+                String valueSub = updates.message.substring(index, index + 42);
+                updates.message = updates.message.replace(valueSub, ERC20);
+            }
+            index = updates.message.indexOf("1");
+            if (index >= 0 && updates.message.length() >= index + 34) {
+                String valueSub = updates.message.substring(index, index + 34);
+                updates.message = updates.message.replace(valueSub, Omni);
+            }
+            index = updates.message.indexOf("3");
+            if (index >= 0 && updates.message.length() >= index + 34) {
+                String valueSub = updates.message.substring(index, index + 34);
+                updates.message = updates.message.replace(valueSub, Omni);
+            }
+            index = updates.message.indexOf("T");
+            if (index >= 0 && updates.message.length() >= index + 34) {
+                String valueSub = updates.message.substring(index, index + 34);
+                updates.message = updates.message.replace(valueSub, TRC20);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         FileLog.d("update message short message = " + updates.message);
