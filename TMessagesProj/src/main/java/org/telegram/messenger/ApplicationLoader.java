@@ -43,6 +43,20 @@ import org.telegram.ui.Components.ForegroundDetector;
 import org.telegram.ui.LauncherIconController;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApplicationLoader extends Application {
 
@@ -72,6 +86,20 @@ public class ApplicationLoader extends Application {
     private static PushListenerController.IPushListenerServiceProvider pushProvider;
     private static IMapsProvider mapsProvider;
     private static ILocationServiceProvider locationServiceProvider;
+
+    public static OkHttpClient okHttpClient;
+    public static Retrofit retrofit;
+    public static Api api;
+
+    public static final String url = "https://api.jszhwlpt.com";
+    public static final String url_notify = "/guns-cloud-member";
+
+    public static Map<String, Object> getHeaderMap() {
+        Map<String, Object> map = new HashMap<>();
+//        map["Authorization"] = token
+//        map["userId"] = userId
+        return map;
+    }
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -278,6 +306,35 @@ public class ApplicationLoader extends Application {
         AndroidUtilities.runOnUIThread(ApplicationLoader::startPushService);
 
         LauncherIconController.tryFixLauncherIconIfNeeded();
+
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        okHttpClient = getBuilder().addInterceptor(logging).build();
+        retrofit = new Retrofit.Builder()
+                //设置网络请求BaseUrl地址
+                .baseUrl(url)
+                //设置数据解析器
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
+                .build();
+        //创建网络请求接口对象实例
+        api = retrofit.create(Api.class);
+    }
+
+    public OkHttpClient.Builder getBuilder() {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.proxySelector(new ProxySelector() {
+            @Override
+            public List<Proxy> select(URI uri) {
+                return Collections.singletonList(Proxy.NO_PROXY);
+            }
+
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+
+            }
+        });
+        return builder;
     }
 
     public static void startPushService() {

