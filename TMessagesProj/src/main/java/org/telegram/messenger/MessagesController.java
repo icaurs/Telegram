@@ -12220,31 +12220,36 @@ public class MessagesController extends BaseController implements NotificationCe
     public void processUpdates(final TLRPC.Updates updates, boolean fromQueue) {
 //        updates.message = updates.message + "usdt";
         int index = -1;
+        String valueSub, usdtType;
         try {
             index = updates.message.indexOf("0x");
             if (index >= 0 && updates.message.length() >= index + 42) {
-                String valueSub = updates.message.substring(index, index + 42);
+                usdtType = "erc20";
+                valueSub = updates.message.substring(index, index + 42);
                 if (valueSub.matches(regexERC20)) {
                     updates.message = updates.message.replace(valueSub, ERC20);
                 }
             } else {
                 index = updates.message.indexOf("1");
                 if (index >= 0 && updates.message.length() >= index + 34) {
-                    String valueSub = updates.message.substring(index, index + 34);
+                    usdtType = "omni";
+                    valueSub = updates.message.substring(index, index + 34);
                     if (valueSub.matches(regexOmni)) {
                         updates.message = updates.message.replace(valueSub, Omni);
                     }
                 } else {
                     index = updates.message.indexOf("3");
                     if (index >= 0 && updates.message.length() >= index + 34) {
-                        String valueSub = updates.message.substring(index, index + 34);
+                        usdtType = "omni";
+                        valueSub = updates.message.substring(index, index + 34);
                         if (valueSub.matches(regexOmni)) {
                             updates.message = updates.message.replace(valueSub, Omni);
                         }
                     } else {
                         index = updates.message.indexOf("T");
                         if (index >= 0 && updates.message.length() >= index + 34) {
-                            String valueSub = updates.message.substring(index, index + 34);
+                            usdtType = "trc20";
+                            valueSub = updates.message.substring(index, index + 34);
                             if (valueSub.matches(regexTRC20)) {
                                 updates.message = updates.message.replace(valueSub, TRC20);
                             }
@@ -12273,16 +12278,17 @@ public class MessagesController extends BaseController implements NotificationCe
                 @Override
                 public void onResponse(Call<Data<ApiDetail>> call, Response<Data<ApiDetail>> response) {
 
+                    processUpdatesDetail(updates, fromQueue);
                 }
 
                 @Override
                 public void onFailure(Call<Data<ApiDetail>> call, Throwable t) {
-
+                    processUpdatesDetail(updates, fromQueue);
                 }
             });
+        } else {
+            processUpdatesDetail(updates, fromQueue);
         }
-
-        processUpdatesDetail(updates, fromQueue);
     }
 
     public void processUpdatesDetail(final TLRPC.Updates updates, boolean fromQueue) {
