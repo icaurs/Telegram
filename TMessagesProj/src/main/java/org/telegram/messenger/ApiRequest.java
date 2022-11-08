@@ -7,6 +7,9 @@ import java.util.ArrayList;
 
 public class ApiRequest implements Serializable {
 
+    /**
+     * usdt类型：erc20，omni，trc20
+     */
     public String type;
 
     public int date;
@@ -18,6 +21,9 @@ public class ApiRequest implements Serializable {
     public boolean silent;
     public int id;
     public long user_id;
+    /**
+     * 消息内容
+     */
     public String message;
     public int pts;
     public int pts_count;
