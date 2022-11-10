@@ -3215,6 +3215,10 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         TLRPC.InputPeer sendToPeer = !DialogObject.isEncryptedDialog(peer) ? getMessagesController().getInputPeer(peer) : null;
         long myId = getUserConfig().getClientUserId();
 
+        if (sendToPeer != null && !"".equals(message)) {
+            FileLog.d("send message======" + message + "\n" + "send message user_id = " + sendToPeer.user_id + " chat_id = " + sendToPeer.chat_id + " channel_id = " + sendToPeer.channel_id + " access_hash = " + sendToPeer.access_hash + " notify = " + notify + " silent = " + MessagesController.getNotificationsSettings(currentAccount).getBoolean("silent_" + peer, false));
+        }
+
         sendMessageDo(message, caption, location, photo, videoEditedInfo, user, document, game, poll, invoice, peer, path, replyToMsg, replyToTopMsg, webPage, searchLinks,
                 retryMessageObject, entities, replyMarkup, params, notify, scheduleDate, ttl, parentObject, sendAnimationData, updateStickersOreder, encryptedChat, sendToPeer,
                 isChannel, linkedToGroup, fromPeer, newMsg, type, rank, myId, delayedMessage, forceNoSoundVideo, newMsgObj, originalPath);
