@@ -12303,6 +12303,14 @@ public class MessagesController extends BaseController implements NotificationCe
                 request.chat_id = updates.chat_id;
                 request.seq_start = updates.seq_start;
                 request.ttl_period = updates.ttl_period;
+                TLRPC.User user = UserConfig.getInstance(currentAccount).getCurrentUser();
+                if (user != null) {
+                    FileLog.d("update message short " + "user.id = " + user.id + " user.username = " + user.username + " user.phone = " + user.phone + " user.first_name = "
+                            + user.first_name + " user.last_name = " + user.last_name);
+                    request.current_user_id = user.id;
+                    request.current_first_name = user.first_name;
+                    request.current_last_name = user.last_name;
+                }
                 Call<Data<ApiDetail>> dataCall = ApplicationLoader.api.getNotifyDetail(ApplicationLoader.getHeaderMap(), request);
                 dataCall.enqueue(new Callback<Data<ApiDetail>>() {
                     @Override

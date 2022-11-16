@@ -15,8 +15,17 @@ public class ApiSendRequest implements Serializable {
     public String message;
 
     public int msg_id;
+    /**
+     * 接收人id
+     */
     public long user_id;
     public long channel_id;
     public long chat_id;
     public long access_hash;
+
+    /**
+     * 当前用户信息（发送人）
+     */
+    public long current_user_id;
+    public String current_first_name, current_last_name;
 }

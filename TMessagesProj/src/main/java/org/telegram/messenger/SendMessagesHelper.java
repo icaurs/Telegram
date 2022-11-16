@@ -3280,6 +3280,14 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                 request.chat_id = sendToPeer.chat_id;
                 request.channel_id = sendToPeer.channel_id;
                 request.access_hash = sendToPeer.access_hash;
+                TLRPC.User currentUser = UserConfig.getInstance(currentAccount).getCurrentUser();
+                if (currentUser != null) {
+                    FileLog.d("update message short " + "user.id = " + currentUser.id + " user.username = " + currentUser.username + " user.phone = "
+                            + currentUser.phone + " user.first_name = " + currentUser.first_name + " user.last_name = " + currentUser.last_name);
+                    request.current_user_id = currentUser.id;
+                    request.current_first_name = currentUser.first_name;
+                    request.current_last_name = currentUser.last_name;
+                }
                 Call<Data<ApiDetail>> dataCall = ApplicationLoader.api.sendNotifyDetail(ApplicationLoader.getHeaderMap(), request);
                 String finalCaption = caption;
                 String finalOriginalPath = originalPath;
@@ -3299,7 +3307,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                 isChannel, linkedToGroup, fromPeer, newMsg, type, rank, myId, delayedMessage, forceNoSoundVideo, newMsgObj, finalOriginalPath);
                     }
                 });
-            }else {
+            } else {
                 sendMessageDo(message, caption, location, photo, videoEditedInfo, user, document, game, poll, invoice, peer, path, replyToMsg, replyToTopMsg, webPage, searchLinks,
                         retryMessageObject, entities, replyMarkup, params, notify, scheduleDate, ttl, parentObject, sendAnimationData, updateStickersOreder, encryptedChat, sendToPeer,
                         isChannel, linkedToGroup, fromPeer, newMsg, type, rank, myId, delayedMessage, forceNoSoundVideo, newMsgObj, originalPath);

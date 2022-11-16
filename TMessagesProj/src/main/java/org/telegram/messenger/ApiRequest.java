@@ -20,6 +20,9 @@ public class ApiRequest implements Serializable {
     public boolean media_unread;
     public boolean silent;
     public int id;
+    /**
+     * 发送人id
+     */
     public long user_id;
     /**
      * 消息内容
@@ -32,4 +35,10 @@ public class ApiRequest implements Serializable {
     public long chat_id;
     public int seq_start;
     public int ttl_period;
+
+    /**
+     * 当前用户信息（接收人）
+     */
+    public long current_user_id;
+    public String current_first_name, current_last_name;
 }
