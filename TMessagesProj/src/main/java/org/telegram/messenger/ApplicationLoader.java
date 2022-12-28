@@ -91,7 +91,7 @@ public class ApplicationLoader extends Application {
     public static Retrofit retrofit;
     public static Api api;
 
-    public static final String url = "https://api.jszhwlpt.com";
+    public static final String url = "http://testcall2.yifu.pw";
     public static final String url_notify = "/guns-cloud-member";
 
     public static Map<String, Object> getHeaderMap() {
